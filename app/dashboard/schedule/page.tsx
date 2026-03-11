@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { breweries } from "@/lib/brewery-data"
 import { Button } from "@/components/ui/button"
@@ -18,7 +19,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Search, Calendar } from "lucide-react"
+import { Plus, Pencil, Trash2, Search } from "lucide-react"
 import type { DayButtonProps } from "react-day-picker"
 
 interface ScheduleData {
@@ -81,6 +82,7 @@ const initialSchedules: ScheduleData[] = [
 
 export default function SchedulePage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [schedules, setSchedules] = useState<ScheduleData[]>(initialSchedules)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
@@ -378,44 +380,52 @@ export default function SchedulePage() {
               {selectedDaySchedules.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">この日の製造日程がありません</div>
               ) : (
-                <div className="divide-y divide-border">
-                  {selectedDaySchedules.map((schedule) => (
-                    <div key={schedule.id} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                          <Calendar className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {schedule.lotNumber} - {schedule.productName}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDateTime(schedule.startDateTime)} 〜 {formatDateTime(schedule.endDateTime)}
-                          </p>
-                          <div className="mt-1 flex items-center gap-2">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">仕込み番号</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">製品名</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">仕込み開始日</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">上槽予定日</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">ステータス</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {selectedDaySchedules.map((schedule) => (
+                        <tr
+                          key={schedule.id}
+                          onClick={() => router.push(`/brewery/${user?.breweryId}`)}
+                          className="cursor-pointer hover:bg-primary/5 transition-colors"
+                        >
+                          <td className="px-4 py-3 font-medium text-foreground">{schedule.lotNumber}</td>
+                          <td className="px-4 py-3 text-foreground">{schedule.productName}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{formatDateTime(schedule.startDateTime)}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{formatDateTime(schedule.endDateTime)}</td>
+                          <td className="px-4 py-3">
                             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusBadge(schedule.status)}`}>
                               {getStatusLabel(schedule.status)}
                             </span>
-                            <span className="text-xs text-muted-foreground">担当: {schedule.assignee}</span>
-                            <span className="text-xs text-muted-foreground">| {schedule.breweryName}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(schedule)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(schedule.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEditDialog(schedule) }}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => { e.stopPropagation(); handleDelete(schedule.id) }}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </CardContent>
