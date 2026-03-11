@@ -1,11 +1,21 @@
 "use client"
 
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 import { breweries } from "@/lib/brewery-data"
 import { MapPin, ArrowRight } from "lucide-react"
 
 export default function BrewerySelectPage() {
   const router = useRouter()
+  const { user, isLoading } = useAuth()
+
+  useEffect(() => {
+    if (isLoading) return
+    if (user?.role === "user") {
+      router.replace("/dashboard")
+    }
+  }, [isLoading, router, user?.role])
 
   return (
     <div className="min-h-screen bg-background">

@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 import { ComparisonChart } from "@/components/comparison-chart"
 import { breweries, getStatusLabel, type BreweryData } from "@/lib/brewery-data"
 import { ChevronLeft, ArrowLeftRight, MapPin, Clock, Thermometer, Droplets } from "lucide-react"
@@ -114,8 +115,16 @@ function SummaryTable({ breweryA, breweryB }: { breweryA: BreweryData; breweryB:
 
 export default function ComparePage() {
   const router = useRouter()
+  const { user, isLoading } = useAuth()
   const [idA, setIdA] = useState("0001")
   const [idB, setIdB] = useState("0002")
+
+  useEffect(() => {
+    if (isLoading) return
+    if (user?.role === "user") {
+      router.replace("/dashboard")
+    }
+  }, [isLoading, router, user?.role])
 
   const breweryA = useMemo(() => breweries.find((b) => b.id === idA)!, [idA])
   const breweryB = useMemo(() => breweries.find((b) => b.id === idB)!, [idB])

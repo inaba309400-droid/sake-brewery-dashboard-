@@ -1,6 +1,8 @@
 "use client"
 
+import { useEffect, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 import { DetailChart } from "@/components/detail-chart"
 import { WeatherWidget } from "@/components/weather-widget"
 import { breweries, getStatusLabel } from "@/lib/brewery-data"
@@ -9,7 +11,21 @@ import { ChevronLeft, MapPin, Clock, Activity } from "lucide-react"
 export default function BreweryDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const brewery = breweries.find((b) => b.id === params.id)
+  const { user, isLoading } = useAuth()
+
+  const id = useMemo(() => {
+    const raw = (params as { id?: string | string[] })?.id
+    return Array.isArray(raw) ? raw[0] : raw
+  }, [params])
+
+  useEffect(() => {
+    if (isLoading) return
+    if (user?.role === "user" && id && user.breweryId && id !== user.breweryId) {
+      router.replace("/dashboard")
+    }
+  }, [id, isLoading, router, user?.breweryId, user?.role])
+
+  const brewery = breweries.find((b) => b.id === id)
 
   if (!brewery) {
     return (
