@@ -30,6 +30,7 @@ interface QualityData {
   humidity: number
   productTemp: number
   roomTemp: number
+  brix: number
   measuredAt: string
 }
 
@@ -51,6 +52,7 @@ const initialQualityRecords: QualityData[] = [
     humidity: 62,
     productTemp: 8.3,
     roomTemp: 18.5,
+    brix: 13.2,
     measuredAt: "2024-03-01T10:00",
   },
   {
@@ -64,6 +66,7 @@ const initialQualityRecords: QualityData[] = [
     humidity: 60,
     productTemp: 8.5,
     roomTemp: 18.8,
+    brix: 13.8,
     measuredAt: "2024-03-01T14:00",
   },
   {
@@ -77,6 +80,7 @@ const initialQualityRecords: QualityData[] = [
     humidity: 58,
     productTemp: 7.9,
     roomTemp: 17.2,
+    brix: 12.9,
     measuredAt: "2024-03-02T09:00",
   },
 ]
@@ -94,6 +98,7 @@ export default function QualityPage() {
   const [formHumidity, setFormHumidity] = useState("")
   const [formProductTemp, setFormProductTemp] = useState("")
   const [formRoomTemp, setFormRoomTemp] = useState("")
+  const [formBrix, setFormBrix] = useState("")
   const [formMeasuredAt, setFormMeasuredAt] = useState("")
 
   // Filter based on user role
@@ -113,6 +118,7 @@ export default function QualityPage() {
     setFormHumidity("")
     setFormProductTemp("")
     setFormRoomTemp("")
+    setFormBrix("")
     setFormMeasuredAt("")
     setEditingRecord(null)
   }
@@ -129,6 +135,7 @@ export default function QualityPage() {
     setFormHumidity(record.humidity.toString())
     setFormProductTemp(record.productTemp.toString())
     setFormRoomTemp(record.roomTemp.toString())
+    setFormBrix(record.brix.toString())
     setFormMeasuredAt(record.measuredAt)
     setIsDialogOpen(true)
   }
@@ -152,6 +159,7 @@ export default function QualityPage() {
                 humidity: parseFloat(formHumidity),
                 productTemp: parseFloat(formProductTemp),
                 roomTemp: parseFloat(formRoomTemp),
+                brix: parseFloat(formBrix),
                 measuredAt: formMeasuredAt,
               }
             : r
@@ -169,6 +177,7 @@ export default function QualityPage() {
         humidity: parseFloat(formHumidity),
         productTemp: parseFloat(formProductTemp),
         roomTemp: parseFloat(formRoomTemp),
+        brix: parseFloat(formBrix),
         measuredAt: formMeasuredAt,
       }
       setRecords([...records, newRecord])
@@ -280,6 +289,17 @@ export default function QualityPage() {
                   </Field>
                 </div>
                 <Field>
+                  <FieldLabel htmlFor="brix">糖度 (Brix)</FieldLabel>
+                  <Input
+                    id="brix"
+                    type="number"
+                    step="0.1"
+                    value={formBrix}
+                    onChange={(e) => setFormBrix(e.target.value)}
+                    placeholder="糖度"
+                  />
+                </Field>
+                <Field>
                   <FieldLabel htmlFor="measuredAt">測定日時</FieldLabel>
                   <Input
                     id="measuredAt"
@@ -301,6 +321,7 @@ export default function QualityPage() {
                     !formHumidity ||
                     !formProductTemp ||
                     !formRoomTemp ||
+                    !formBrix ||
                     !formMeasuredAt
                   }
                 >
@@ -351,7 +372,7 @@ export default function QualityPage() {
                             {formatDateTime(record.measuredAt)} | {record.breweryName}
                           </p>
                           {/* Measurement Values */}
-                          <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
+                          <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-5">
                             <div className="flex items-center gap-2">
                               <Thermometer className="h-4 w-4 text-chart-1" />
                               <span className="text-sm">
@@ -378,6 +399,13 @@ export default function QualityPage() {
                               <span className="text-sm">
                                 <span className="text-muted-foreground">室温:</span>{" "}
                                 <span className="font-medium">{record.roomTemp}°C</span>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Droplets className="h-4 w-4 text-primary" />
+                              <span className="text-sm">
+                                <span className="text-muted-foreground">糖度:</span>{" "}
+                                <span className="font-medium">{record.brix}</span>
                               </span>
                             </div>
                           </div>

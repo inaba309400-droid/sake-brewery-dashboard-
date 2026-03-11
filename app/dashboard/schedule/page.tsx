@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { breweries } from "@/lib/brewery-data"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
+import { Calendar as MonthCalendar, CalendarDayButton } from "@/components/ui/calendar"
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Pencil, Trash2, Search, Calendar } from "lucide-react"
+import type { DayButtonProps } from "react-day-picker"
 
 interface ScheduleData {
   id: string
@@ -81,6 +83,7 @@ export default function SchedulePage() {
   const { user } = useAuth()
   const [schedules, setSchedules] = useState<ScheduleData[]>(initialSchedules)
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingSchedule, setEditingSchedule] = useState<ScheduleData | null>(null)
 
@@ -101,6 +104,50 @@ export default function SchedulePage() {
       s.assignee.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.lotNumber.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const toDateKey = (date: Date) => {
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, "0")
+    const dd = String(date.getDate()).padStart(2, "0")
+    return `${yyyy}-${mm}-${dd}`
+  }
+
+  const scheduleDateKey = (s: ScheduleData) => toDateKey(new Date(s.startDateTime))
+
+  const dayStatusMap = useMemo(() => {
+    const map = new Map<string, Set<ScheduleData["status"]>>()
+    for (const s of filteredSchedules) {
+      const key = scheduleDateKey(s)
+      const set = map.get(key) ?? new Set<ScheduleData["status"]>()
+      set.add(s.status)
+      map.set(key, set)
+    }
+    return map
+  }, [filteredSchedules])
+
+  const selectedDaySchedules = useMemo(() => {
+    if (!selectedDate) return []
+    const key = toDateKey(selectedDate)
+    return filteredSchedules.filter((s) => scheduleDateKey(s) === key)
+  }, [filteredSchedules, selectedDate])
+
+  const CalendarDay = (props: DayButtonProps) => {
+    const dayKey = toDateKey(props.day.date)
+    const statuses = dayStatusMap.get(dayKey)
+
+    return (
+      <CalendarDayButton {...props}>
+        {props.children}
+        {statuses && statuses.size > 0 && (
+          <span className="flex items-center justify-center gap-1">
+            {statuses.has("scheduled") && <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />}
+            {statuses.has("in-progress") && <span className="h-1.5 w-1.5 rounded-full bg-chart-4" />}
+            {statuses.has("completed") && <span className="h-1.5 w-1.5 rounded-full bg-chart-2" />}
+          </span>
+        )}
+      </CalendarDayButton>
+    )
+  }
 
   const resetForm = () => {
     setFormLotId("")
@@ -306,54 +353,74 @@ export default function SchedulePage() {
       <div className="p-6">
         <Card>
           <CardHeader>
-            <CardTitle>製造日程一覧 ({filteredSchedules.length})</CardTitle>
+            <CardTitle>カレンダー ({filteredSchedules.length})</CardTitle>
           </CardHeader>
-          <CardContent>
-            {filteredSchedules.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">製造日程が登録されていません</div>
-            ) : (
-              <div className="divide-y divide-border">
-                {filteredSchedules.map((schedule) => (
-                  <div key={schedule.id} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                        <Calendar className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">
-                          {schedule.lotNumber} - {schedule.productName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDateTime(schedule.startDateTime)} 〜 {formatDateTime(schedule.endDateTime)}
-                        </p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusBadge(schedule.status)}`}>
-                            {getStatusLabel(schedule.status)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">担当: {schedule.assignee}</span>
-                          <span className="text-xs text-muted-foreground">| {schedule.breweryName}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(schedule)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(schedule.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          <CardContent className="flex justify-center">
+            <MonthCalendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              components={{ DayButton: CalendarDay }}
+            />
           </CardContent>
         </Card>
+
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {selectedDate
+                  ? `${selectedDate.toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" })} のロット一覧 (${selectedDaySchedules.length})`
+                  : `ロット一覧 (${selectedDaySchedules.length})`}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selectedDaySchedules.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">この日の製造日程がありません</div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {selectedDaySchedules.map((schedule) => (
+                    <div key={schedule.id} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                          <Calendar className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {schedule.lotNumber} - {schedule.productName}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDateTime(schedule.startDateTime)} 〜 {formatDateTime(schedule.endDateTime)}
+                          </p>
+                          <div className="mt-1 flex items-center gap-2">
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusBadge(schedule.status)}`}>
+                              {getStatusLabel(schedule.status)}
+                            </span>
+                            <span className="text-xs text-muted-foreground">担当: {schedule.assignee}</span>
+                            <span className="text-xs text-muted-foreground">| {schedule.breweryName}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(schedule)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(schedule.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

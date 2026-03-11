@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { breweries } from "@/lib/brewery-data"
@@ -54,7 +54,7 @@ const initialUsers: UserData[] = [
 
 export default function UserManagementPage() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
   const [users, setUsers] = useState<UserData[]>(initialUsers)
   const [searchQuery, setSearchQuery] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -66,9 +66,14 @@ export default function UserManagementPage() {
   const [formRole, setFormRole] = useState<"admin" | "user">("user")
   const [formBreweryId, setFormBreweryId] = useState("")
 
-  // Redirect if not admin
-  if (user?.role !== "admin") {
-    router.push("/dashboard")
+  useEffect(() => {
+    if (isLoading) return
+    if (user?.role !== "admin") {
+      router.replace("/dashboard")
+    }
+  }, [isLoading, router, user?.role])
+
+  if (isLoading || user?.role !== "admin") {
     return null
   }
 
