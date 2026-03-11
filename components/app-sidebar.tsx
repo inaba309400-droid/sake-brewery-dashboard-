@@ -26,12 +26,13 @@ interface NavItem {
   href: string
   icon: React.ReactNode
   adminOnly?: boolean
+  hideForUser?: boolean
 }
 
 const navItems: NavItem[] = [
   { label: "ダッシュボード", href: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" /> },
-  { label: "酒蔵別閲覧", href: "/view", icon: <Eye className="h-5 w-5" /> },
-  { label: "酒蔵比較", href: "/compare", icon: <ArrowLeftRight className="h-5 w-5" /> },
+  { label: "酒蔵別閲覧", href: "/view", icon: <Eye className="h-5 w-5" />, hideForUser: true },
+  { label: "酒蔵比較", href: "/compare", icon: <ArrowLeftRight className="h-5 w-5" />, hideForUser: true },
   { label: "ユーザー管理", href: "/dashboard/users", icon: <Users className="h-5 w-5" />, adminOnly: true },
   { label: "製造ロット管理", href: "/dashboard/lots", icon: <Package className="h-5 w-5" /> },
   { label: "製造日程", href: "/dashboard/schedule", icon: <Calendar className="h-5 w-5" /> },
@@ -52,6 +53,7 @@ export function AppSidebar() {
 
   const filteredNavItems = navItems.filter((item) => {
     if (item.adminOnly && user?.role !== "admin") return false
+    if (item.hideForUser && user?.role === "user") return false
     return true
   })
 
