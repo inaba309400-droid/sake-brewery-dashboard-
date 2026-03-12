@@ -272,10 +272,9 @@ export default function AdminDashboard() {
           {[
             { label: "ホーム", href: "/admin", active: true },
             { label: "酒蔵一覧", href: "/admin/breweries" },
-            { label: "センサー管理", href: "/admin/compare" },
+            { label: "酒蔵データ比較", href: "/admin/compare" },
             { label: "レポート", href: "/admin/export" },
             { label: "ユーザー設定", href: "/admin/users" },
-            { label: "システム設定", href: "#" },
           ].map((item) => (
             <button
               key={item.label}
