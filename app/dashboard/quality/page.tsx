@@ -12,6 +12,19 @@ import {
   ResponsiveContainer,
 } from "recharts"
 
+const UNIT_MAP: Record<string, string> = {
+  hinon: "℃",
+  shitsuon: "℃",
+  temperature: "℃",
+  humidity: "%",
+}
+const LABEL_MAP: Record<string, string> = {
+  hinon: "品温",
+  shitsuon: "室温",
+  temperature: "気温",
+  humidity: "湿度",
+}
+
 const qualityData = [
   { day:  1, hinon: 18.1, shitsuon: 19.4, temperature: 18.1, humidity: 72 },
   { day:  2, hinon: 18.8, shitsuon: 19.0, temperature: 20.8, humidity: 73 },
@@ -61,9 +74,9 @@ export default function QualityPage() {
       <div className="p-6 space-y-6">
         {/* Chart Card */}
         <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="text-base font-semibold text-foreground mb-6">品温 / 室温 経過グラフ（30日間）</h2>
-          <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={qualityData} margin={{ top: 4, right: 24, left: 0, bottom: 4 }}>
+          <h2 className="text-base font-semibold text-foreground mb-6">品温 / 室温 / 気温 / 湿度 経過グラフ（30日間）</h2>
+          <ResponsiveContainer width="100%" height={360}>
+            <LineChart data={qualityData} margin={{ top: 4, right: 40, left: 0, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="day"
@@ -71,15 +84,25 @@ export default function QualityPage() {
                 tickFormatter={(v) => `${v}日`}
                 tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
               />
+              {/* 左Y軸（℃） */}
               <YAxis
+                yAxisId="temp"
                 domain={[0, 25]}
                 tickFormatter={(v) => `${v}℃`}
                 tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
               />
+              {/* 右Y軸（湿度 %） */}
+              <YAxis
+                yAxisId="humi"
+                orientation="right"
+                domain={[0, 100]}
+                tickFormatter={(v) => `${v}%`}
+                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+              />
               <Tooltip
                 formatter={(value: number, name: string) => [
-                  `${value}℃`,
-                  name === "hinon" ? "品温" : "室温",
+                  `${value}${UNIT_MAP[name] ?? ""}`,
+                  LABEL_MAP[name] ?? name,
                 ]}
                 labelFormatter={(label) => `${label}日目`}
                 contentStyle={{
@@ -90,25 +113,13 @@ export default function QualityPage() {
                 }}
               />
               <Legend
-                formatter={(value) => (value === "hinon" ? "品温" : "室温")}
+                formatter={(value) => LABEL_MAP[value] ?? value}
                 wrapperStyle={{ fontSize: "13px" }}
               />
-              <Line
-                type="monotone"
-                dataKey="hinon"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="shitsuon"
-                stroke="#f97316"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4 }}
-              />
+              <Line yAxisId="temp" type="monotone" dataKey="hinon"       stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+              <Line yAxisId="temp" type="monotone" dataKey="shitsuon"    stroke="#f97316" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+              <Line yAxisId="temp" type="monotone" dataKey="temperature" stroke="#22c55e" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+              <Line yAxisId="humi" type="monotone" dataKey="humidity"    stroke="#a855f7" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -125,7 +136,7 @@ export default function QualityPage() {
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground w-16">Day</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">品温 (℃)</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">室温 (℃)</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">温度 (℃)</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">気温 (℃)</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">湿度 (%)</th>
                 </tr>
               </thead>
@@ -135,8 +146,8 @@ export default function QualityPage() {
                     <td className="px-4 py-2.5 text-center font-medium text-foreground">{row.day}</td>
                     <td className="px-4 py-2.5 text-right text-blue-600 font-medium">{row.hinon.toFixed(1)}</td>
                     <td className="px-4 py-2.5 text-right text-orange-500 font-medium">{row.shitsuon.toFixed(1)}</td>
-                    <td className="px-4 py-2.5 text-right text-muted-foreground">{row.temperature.toFixed(1)}</td>
-                    <td className="px-4 py-2.5 text-right text-muted-foreground">{row.humidity}</td>
+                    <td className="px-4 py-2.5 text-right text-green-500 font-medium">{row.temperature.toFixed(1)}</td>
+                    <td className="px-4 py-2.5 text-right text-purple-500 font-medium">{row.humidity}</td>
                   </tr>
                 ))}
               </tbody>
