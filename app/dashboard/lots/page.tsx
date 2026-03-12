@@ -40,15 +40,6 @@ const initialLots: LotData[] = [
     status: "in-progress",
   },
   {
-    id: "lot-002",
-    productName: "本醸造 月",
-    lotNumber: "2024-002",
-    breweryId: "0001",
-    breweryName: "石川酒造",
-    createdAt: "2024-02-01",
-    status: "completed",
-  },
-  {
     id: "lot-003",
     productName: "純米酒 風",
     lotNumber: "2024-003",

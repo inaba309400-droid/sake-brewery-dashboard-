@@ -189,8 +189,8 @@ export default function AdminExportPage() {
     },
     {
       key: "sensor",
-      title: "センサーデータ",
-      desc: "全酒蔵のリアルタイムセンサー値",
+      title: "酒蔵データ比較",
+      desc: "全酒蔵の環境データを比較・分析",
       count: breweries.length,
       handler: handleSensorExport,
       adminNote: "全酒蔵分",

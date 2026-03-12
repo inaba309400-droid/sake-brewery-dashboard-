@@ -134,19 +134,20 @@ export default function ExportPage() {
   }
 
   const handleQualityExport = () => {
-    const headers = ["記録ID", "ロット番号", "製品名", "酒蔵名", "温度(°C)", "湿度(%)", "品温(°C)", "室温(°C)", "測定日時"]
-    const rows = DUMMY_QUALITY.filter((r) => user?.role === "admin" || r.brewery === user?.breweryName).map((r) => [
-      r.id,
-      r.lotNo,
-      r.product,
-      r.brewery,
-      r.temperature,
-      r.humidity,
-      r.productTemp,
-      r.roomTemp,
-      r.recordedAt,
-    ])
-    downloadCSV(`酒蔵DX_品質管理データ_${today()}.csv`, toCSV(headers, rows))
+    const QUALITY_30DAY = [
+      [1,18.1,19.4,18.1,72],[2,18.8,19.0,20.8,73],[3,19.3,15.3,17.8,69],
+      [4,19.7,15.0,15.0,61],[5,20.5,18.1,11.8,55],[6,21.5,20.0,9.7,56],
+      [7,22.3,18.1,11.0,64],[8,21.5,15.5,16.2,74],[9,20.6,16.1,18.7,75],
+      [10,20.1,18.7,20.7,69],[11,19.3,19.5,17.4,60],[12,18.3,17.5,13.3,55],
+      [13,17.9,15.0,10.6,56],[14,17.0,16.4,10.4,66],[15,16.2,19.2,11.6,73],
+      [16,16.0,20.0,16.3,75],[17,15.2,17.5,18.8,67],[18,14.2,15.0,19.3,62],
+      [19,13.9,16.3,17.7,55],[20,13.2,19.4,13.1,56],[21,12.3,19.3,10.7,67],
+      [22,11.5,16.4,11.3,73],[23,10.6,15.0,12.0,75],[24,10.3,16.9,15.8,68],
+      [25,9.8,19.7,20.5,62],[26,8.5,19.4,20.0,55],[27,7.9,16.4,16.1,57],
+      [28,7.4,15.5,13.8,65],[29,6.7,17.2,11.1,75],[30,5.9,20.0,10.7,73],
+    ]
+    const headers = ["Day", "品温(℃)", "室温(℃)", "気温(℃)", "湿度(%)"]
+    downloadCSV(`酒蔵DX_品質管理データ_${today()}.csv`, toCSV(headers, QUALITY_30DAY))
     markDownloaded("quality")
   }
 
@@ -189,9 +190,10 @@ export default function ExportPage() {
     {
       key: "quality",
       title: "品質管理データ",
-      desc: "温度・湿度・品温・室温の測定記録",
-      count: DUMMY_QUALITY.filter((r) => user?.role === "admin" || r.brewery === user?.breweryName).length,
+      desc: "温度・湿度・品温・室温の測定記録（30日間）",
+      count: 30,
       handler: handleQualityExport,
+      showFor: ["admin", "user"],
     },
     {
       key: "schedule",
@@ -199,16 +201,17 @@ export default function ExportPage() {
       desc: "仕込みロット・開始日・上槽予定日・担当者",
       count: DUMMY_SCHEDULE.filter((r) => user?.role === "admin" || r.brewery === user?.breweryName).length,
       handler: handleScheduleExport,
+      showFor: ["admin"],
     },
     {
       key: "sensor",
-      title: "センサーデータ",
-      desc: "全酒蔵のリアルタイムセンサー値",
+      title: "蔵別データ比較",
+      desc: "全酒蔵の環境データを比較・分析",
       count: breweries.filter((b) => user?.role === "admin" || b.id === user?.breweryId).length,
       handler: handleSensorExport,
-      adminNote: user?.role !== "admin" ? undefined : "全酒蔵分",
+      showFor: ["admin"],
     },
-  ]
+  ].filter((ex) => ex.showFor.includes(user?.role ?? ""))
 
   return (
     <div className="min-h-screen bg-background">
@@ -229,9 +232,7 @@ export default function ExportPage() {
             <CardContent className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{ex.desc}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {ex.count}件 {ex.adminNote && `（${ex.adminNote}）`}
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{ex.count}件</p>
               </div>
               <Button
                 onClick={ex.handler}

@@ -59,7 +59,7 @@ export default function BreweryDetailPage() {
       <header className="border-b border-border bg-card">
         <div className="mx-auto max-w-5xl px-6 py-8">
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/dashboard")}
             className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />

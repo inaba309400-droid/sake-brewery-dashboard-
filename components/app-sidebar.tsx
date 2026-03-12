@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Users,
   Package,
-  Calendar,
   ClipboardCheck,
   Download,
   LogOut,
@@ -32,10 +31,9 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "ダッシュボード", href: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" /> },
   { label: "酒蔵別閲覧", href: "/view", icon: <Eye className="h-5 w-5" />, hideForUser: true },
-  { label: "酒蔵比較", href: "/compare", icon: <ArrowLeftRight className="h-5 w-5" />, hideForUser: true },
+  { label: "酒蔵データ比較", href: "/compare", icon: <ArrowLeftRight className="h-5 w-5" />, hideForUser: true },
   { label: "ユーザー管理", href: "/dashboard/users", icon: <Users className="h-5 w-5" />, adminOnly: true },
   { label: "製造ロット管理", href: "/dashboard/lots", icon: <Package className="h-5 w-5" /> },
-  { label: "製造日程", href: "/dashboard/schedule", icon: <Calendar className="h-5 w-5" /> },
   { label: "品質管理", href: "/dashboard/quality", icon: <ClipboardCheck className="h-5 w-5" /> },
   { label: "データ出力", href: "/dashboard/export", icon: <Download className="h-5 w-5" /> },
 ]
