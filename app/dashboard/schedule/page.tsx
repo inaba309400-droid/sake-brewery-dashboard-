@@ -37,7 +37,6 @@ interface ScheduleData {
 
 const mockLots = [
   { id: "lot-001", lotNumber: "2024-001", productName: "純米大吟醸 華", breweryId: "0001" },
-  { id: "lot-002", lotNumber: "2024-002", productName: "本醸造 月", breweryId: "0001" },
   { id: "lot-003", lotNumber: "2024-003", productName: "純米酒 風", breweryId: "0002" },
 ]
 
