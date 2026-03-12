@@ -205,7 +205,7 @@ export default function ExportPage() {
     },
     {
       key: "sensor",
-      title: "酒蔵データ比較",
+      title: "蔵別データ比較",
       desc: "全酒蔵の環境データを比較・分析",
       count: breweries.filter((b) => user?.role === "admin" || b.id === user?.breweryId).length,
       handler: handleSensorExport,
