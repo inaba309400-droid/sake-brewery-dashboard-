@@ -100,16 +100,37 @@ export default function QualityPage() {
                 tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
               />
               <Tooltip
+                offset={20}
                 formatter={(value: number, name: string) => [
                   `${value}${UNIT_MAP[name] ?? ""}`,
                   LABEL_MAP[name] ?? name,
                 ]}
                 labelFormatter={(label) => `${label}日目`}
                 contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #e2e8f0",
                   borderRadius: "8px",
-                  fontSize: "13px",
+                  fontSize: "14px",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                  padding: "10px 14px",
+                }}
+                itemStyle={{ padding: "2px 0" }}
+                formatter={(value: number, name: string) => {
+                  const colors: Record<string, string> = {
+                    hinon: "#3b82f6",
+                    shitsuon: "#f97316",
+                    temperature: "#22c55e",
+                    humidity: "#a855f7",
+                  }
+                  const color = colors[name] ?? "#666"
+                  return [
+                    <span key={name} style={{ color, fontWeight: 600 }}>
+                      {value}{UNIT_MAP[name] ?? ""}
+                    </span>,
+                    <span key={`${name}-label`} style={{ color: "#374151" }}>
+                      {LABEL_MAP[name] ?? name}
+                    </span>,
+                  ]
                 }}
               />
               <Legend
